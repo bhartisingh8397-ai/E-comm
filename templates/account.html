@@ -120,11 +120,11 @@
                 <a href="#profile" class="sidebar-link active">
                     <i class="fas fa-user"></i> Profile Details
                 </a>
+                <a href="#addresses" class="sidebar-link">
+                    <i class="fas fa-map-marker-alt"></i> Saved Addresses
+                </a>
                 <a href="#orders" class="sidebar-link">
                     <i class="fas fa-box"></i> Order History
-                </a>
-                <a href="#settings" class="sidebar-link">
-                    <i class="fas fa-cog"></i> Settings
                 </a>
                 <a href="{{ url_for('logout') }}" class="sidebar-link" style="color: #ff4757; margin-top: 2rem;">
                     <i class="fas fa-sign-out-alt"></i> Sign Out
@@ -135,15 +135,62 @@
                 <!-- User Details Section -->
                 <section id="profile" class="glass reveal" style="padding: 3rem; margin-bottom: 4rem;">
                     <h2 style="font-size: 1.8rem; margin-bottom: 2rem;">Personal Information</h2>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <form action="{{ url_for('edit_profile') }}" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div>
                             <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Full Name</label>
-                            <p style="font-size: 1.2rem; font-weight: 700;">{{ current_user.name }}</p>
+                            <input type="text" name="name" value="{{ current_user.name }}" style="width: 100%; padding: 1rem; border-radius: 12px; border: 1.5px solid var(--glass-border); font-size: 1.1rem; font-weight: 600;">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Email Address</label>
-                            <p style="font-size: 1.2rem; font-weight: 700;">{{ current_user.email }}</p>
+                            <input type="email" name="email" value="{{ current_user.email }}" style="width: 100%; padding: 1rem; border-radius: 12px; border: 1.5px solid var(--glass-border); font-size: 1.1rem; font-weight: 600;">
                         </div>
+                        <div style="grid-column: span 2; margin-top: 1rem;">
+                            <button type="submit" class="btn btn-primary" style="padding: 1rem 2.5rem;">Save Changes</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Saved Addresses Section -->
+                <section id="addresses" class="reveal" style="margin-bottom: 4rem; animation-delay: 0.1s;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 2rem;">Saved Addresses</h2>
+                    
+                    <div class="address-grid">
+                        {% for addr in current_user.addresses %}
+                        <div class="address-card">
+                            <span class="address-tag">{{ addr.type }}</span>
+                            <p style="font-size: 1.1rem; line-height: 1.6; color: var(--text-primary);">{{ addr.full_address }}</p>
+                            <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-secondary);">Added on {{ addr.id }}</p>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- Add New Address Card -->
+                        <div class="address-card" style="border: 2px dashed var(--glass-border); background: transparent; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer;" onclick="document.getElementById('address-form').style.display='block'">
+                            <i class="fas fa-plus-circle" style="font-size: 2.5rem; color: var(--glass-border); margin-bottom: 1rem;"></i>
+                            <span style="font-weight: 600; color: var(--text-secondary);">Add New Address</span>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Address Form -->
+                    <div id="address-form" class="glass" style="display: none; margin-top: 3rem; padding: 2.5rem;">
+                        <h3 style="margin-bottom: 1.5rem;">New Address</h3>
+                        <form action="{{ url_for('add_address') }}" method="POST">
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">Address Type</label>
+                                <select name="type" style="width: 100%; padding: 1rem; border-radius: 12px; border: 1.5px solid var(--glass-border);">
+                                    <option value="Home">Home</option>
+                                    <option value="Office">Office</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <label style="display: block; margin-bottom: 0.5rem;">Full Address Details</label>
+                                <textarea name="full_address" placeholder="Flat No, Building, Street, City, State, PIN" style="width: 100%; padding: 1rem; border-radius: 12px; border: 1.5px solid var(--glass-border); min-height: 100px;"></textarea>
+                            </div>
+                            <div style="display: flex; gap: 1rem;">
+                                <button type="submit" class="btn btn-primary" style="padding: 1rem 2rem;">Save Address</button>
+                                <button type="button" class="btn btn-outline" style="padding: 1rem 2rem;" onclick="document.getElementById('address-form').style.display='none'">Cancel</button>
+                            </div>
+                        </form>
                     </div>
                 </section>
 

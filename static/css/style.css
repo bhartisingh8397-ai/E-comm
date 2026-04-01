@@ -759,3 +759,77 @@ nav {
 /* ===== SKELETON LOADING ===== */
 .skeleton { background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 12px; }
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+/* ===== QUANTITY SELECTOR ===== */
+.qty-selector {
+    display: flex; align-items: center; border: 1.5px solid var(--glass-border);
+    border-radius: 12px; overflow: hidden; width: fit-content; background: #fff;
+}
+.qty-btn {
+    padding: 0.5rem 1rem; border: none; background: none; cursor: pointer;
+    color: var(--text-primary); transition: var(--transition); display: flex; align-items: center;
+}
+.qty-btn:hover { background: rgba(212, 175, 55, 0.1); color: var(--accent); }
+.qty-input {
+    width: 40px; text-align: center; border: none; border-left: 1px solid var(--glass-border);
+    border-right: 1px solid var(--glass-border); font-weight: 700;
+}
+
+/* ===== RELATED PRODUCTS CAROUSEL ===== */
+.carousel-container {
+    overflow-x: auto; display: flex; gap: 2rem; padding: 1rem 0 3rem;
+    scrollbar-width: none; -ms-overflow-style: none; scroll-snap-type: x mandatory;
+}
+.carousel-container::-webkit-scrollbar { display: none; }
+.carousel-item { flex: 0 0 300px; scroll-snap-align: start; }
+
+/* ===== ADDRESS CARDS ===== */
+.address-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem; }
+.address-card {
+    padding: 2rem; border-radius: 20px; border: 1.5px solid var(--glass-border);
+    background: #fff; transition: var(--transition); position: relative;
+}
+.address-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+.address-tag {
+    position: absolute; top: 1.5rem; right: 1.5rem; background: var(--accent-gradient);
+    color: #fff; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700;
+}
+
+/* ===== PROMO CODE & SUMMARY ===== */
+.promo-section { 
+    margin-top: 2.5rem; 
+    padding: 2rem; 
+    background: #fcfcfc; 
+    border-radius: 20px; 
+    border: 1px solid var(--glass-border); 
+}
+.promo-input-group { 
+    display: flex; 
+    gap: 0.8rem; 
+    margin-top: 1.2rem; 
+    width: 100%;
+}
+.promo-input-group input {
+    flex: 1; 
+    min-width: 0; /* Prevents input from pushing out button */
+    padding: 1rem 1.2rem; 
+    border-radius: 12px; 
+    border: 1.5px solid var(--glass-border);
+    background: #fff; 
+    outline: none; 
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+.promo-input-group input:focus { border-color: var(--accent); }
+
+.summary-row { display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 1rem; }
+.summary-row.total { font-size: 1.5rem; font-weight: 800; border-top: 1.5px dashed var(--glass-border); margin-top: 1.5rem; padding-top: 1.5rem; color: var(--text-primary); }
+.discount-tag { color: #00b894; font-weight: 600; }
+
+/* ===== WHATSAPP BUTTON ===== */
+.btn-whatsapp {
+    background: #25d366; color: #fff !important; border: none !important;
+    display: flex; align-items: center; justify-content: center; gap: 0.8rem;
+    padding: 1.2rem 2.5rem; border-radius: 12px; cursor: pointer; transition: var(--transition);
+    text-decoration: none; font-weight: 700;
+}
+.btn-whatsapp:hover { background: #128c7e; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2); }

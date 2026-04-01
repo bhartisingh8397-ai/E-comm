@@ -158,8 +158,10 @@
             <div class="footer-col footer-newsletter">
                 <h4>Stay Updated</h4>
                 <p style="color: #999; font-size: 0.9rem; margin-bottom: 1rem;">Get exclusive offers and new arrivals straight to your inbox.</p>
-                <input type="email" placeholder="Enter your email">
-                <button onclick="showToast('Subscribed successfully! 🎉', 'success')"><i class="fas fa-paper-plane"></i> Subscribe</button>
+                <form action="{{ url_for('newsletter_subscribe') }}" method="POST" style="display: flex; gap: 0.5rem; flex-direction: column;">
+                    <input type="email" name="email" placeholder="Enter your email" required style="padding: 1rem; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #fff; outline: none;">
+                    <button type="submit" class="btn btn-primary" style="padding: 1rem; width: 100%;"><i class="fas fa-paper-plane"></i> Subscribe</button>
+                </form>
             </div>
         </div>
         <div class="footer-bottom">

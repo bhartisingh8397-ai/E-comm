@@ -2,7 +2,7 @@ import os
 from flask import Flask, render_template, redirect, url_for, request, flash, session, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import db, User, Product, Order, OrderItem
+from models import db, User, Product, Order, OrderItem, Address, Newsletter
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev-secret-key-12345'
@@ -173,6 +173,75 @@ def remove_from_cart(product_id):
     session['cart'] = cart
     return redirect(url_for('cart'))
 
+@app.route('/update_cart_quantity/<int:product_id>/<string:action>')
+def update_cart_quantity(product_id, action):
+    cart = session.get('cart', {})
+    pid_str = str(product_id)
+    if pid_str in cart:
+        if action == 'increment':
+            cart[pid_str] += 1
+        elif action == 'decrement':
+            cart[pid_str] -= 1
+            if cart[pid_str] < 1:
+                del cart[pid_str]
+        session['cart'] = cart
+    return redirect(url_for('cart'))
+
+@app.route('/edit_profile', methods=['POST'])
+@login_required
+def edit_profile():
+    name = request.form.get('name')
+    email = request.form.get('email')
+    
+    if User.query.filter(User.email == email, User.id != current_user.id).first():
+        flash('Email already in use.', 'error')
+    else:
+        current_user.name = name
+        current_user.email = email
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+    return redirect(url_for('account'))
+
+@app.route('/add_address', methods=['POST'])
+@login_required
+def add_address():
+    addr_type = request.form.get('type')
+    full_address = request.form.get('full_address')
+    
+    new_address = Address(user_id=current_user.id, type=addr_type, full_address=full_address)
+    db.session.add(new_address)
+    db.session.commit()
+    flash('Address added successfully!', 'success')
+    return redirect(url_for('account'))
+
+@app.route('/newsletter/subscribe', methods=['POST'])
+def newsletter_subscribe():
+    email = request.form.get('email')
+    if not email:
+        flash('Please enter an email.', 'error')
+        return redirect(request.referrer)
+    
+    if Newsletter.query.filter_by(email=email).first():
+        flash('You are already subscribed!', 'info')
+    else:
+        new_sub = Newsletter(email=email)
+        db.session.add(new_sub)
+        db.session.commit()
+        flash('Subscribed successfully! 🎉', 'success')
+    return redirect(request.referrer or url_for('index'))
+
+@app.route('/apply_promo', methods=['POST'])
+def apply_promo():
+    code = request.form.get('promo_code', '').upper()
+    if code == 'JAHNVI10':
+        session['discount_percent'] = 10
+        flash('Promo code applied! 10% discount added.', 'success')
+    elif not code:
+        flash('Please enter a code.', 'error')
+    else:
+        flash('Invalid promo code.', 'error')
+    return redirect(url_for('cart'))
+
 @app.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
@@ -188,8 +257,12 @@ def checkout():
             total += product.price * quantity
             items_to_buy.append((product, quantity))
             
+    # Apply discount if any
+    discount = session.get('discount_percent', 0)
+    final_total = total * (1 - discount/100)
+            
     if request.method == 'POST':
-        order = Order(user_id=current_user.id, total_price=total)
+        order = Order(user_id=current_user.id, total_price=final_total)
         db.session.add(order)
         db.session.commit()
         
@@ -199,10 +272,11 @@ def checkout():
         
         db.session.commit()
         session['cart'] = {}
+        session.pop('discount_percent', None) # Clear discount after order
         flash('Order placed successfully!', 'success')
         return render_template('success.html')
         
-    return render_template('checkout.html', total=total)
+    return render_template('checkout.html', total=final_total, discount=discount)
 
 # Auto-initialize and seed DB on server refresh
 with app.app_context():

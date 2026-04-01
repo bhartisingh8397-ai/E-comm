@@ -132,8 +132,10 @@
                         {% endif %}
                         <p class="cart-item-price">${{ "%.2f"|format(item.product.price) }}</p>
                     </div>
-                    <div class="cart-item-qty">
-                        <span>× {{ item.quantity }}</span>
+                    <div class="qty-selector">
+                        <a href="{{ url_for('update_cart_quantity', product_id=item.product.id, action='decrement') }}" class="qty-btn"><i class="fas fa-minus"></i></a>
+                        <div class="qty-input">{{ item.quantity }}</div>
+                        <a href="{{ url_for('update_cart_quantity', product_id=item.product.id, action='increment') }}" class="qty-btn"><i class="fas fa-plus"></i></a>
                     </div>
                     <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}" class="cart-remove" title="Remove">
                         <i class="fas fa-trash-alt"></i>
@@ -143,20 +145,32 @@
             </div>
 
             <div class="cart-summary">
-                <h3>Order Summary</h3>
-                {% for item in products %}
-                <div class="summary-row">
-                    <span>{{ item.product.name }} × {{ item.quantity }}</span>
-                    <span>${{ "%.2f"|format(item.product.price * item.quantity) }}</span>
+                <div class="promo-section">
+                    <h4>Promo Code</h4>
+                    <form action="{{ url_for('apply_promo') }}" method="POST" class="promo-input-group">
+                        <input type="text" name="promo_code" placeholder="Enter code (e.g. JAHNVI10)" value="{{ session.get('last_promo', '') }}">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.8rem 1.5rem;">Apply</button>
+                    </form>
+                    {% if session.get('discount_percent') %}
+                    <p class="discount-tag" style="margin-top: 1rem;"><i class="fas fa-tag"></i> {{ session.get('discount_percent') }}% discount applied!</p>
+                    {% endif %}
                 </div>
-                {% endfor %}
-                <div class="summary-row">
-                    <span>Shipping</span>
-                    <span style="color: #27ae60; font-weight: 700;">FREE</span>
-                </div>
-                <div class="summary-total">
-                    <span>Total</span>
-                    <span>${{ "%.2f"|format(total) }}</span>
+
+                <div class="summary-total" style="margin-top: 2rem; border-top: 2px solid var(--glass-border); padding-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; justify-content: space-between; width: 100%;">
+                        <span>Subtotal</span>
+                        <span>${{ "%.2f"|format(total + (total * (session.get('discount_percent', 0) / (100 - session.get('discount_percent', 0))) if session.get('discount_percent') else 0)) }}</span>
+                    </div>
+                    {% if session.get('discount_percent') %}
+                    <div style="display: flex; justify-content: space-between; width: 100%; color: #00b894; font-size: 0.9rem;">
+                        <span>Discount ({{ session.get('discount_percent') }}%)</span>
+                        <span>-${{ "%.2f"|format((total / (1 - session.get('discount_percent')/100)) * (session.get('discount_percent')/100)) }}</span>
+                    </div>
+                    {% endif %}
+                    <div style="display: flex; justify-content: space-between; width: 100%; font-size: 1.8rem; font-weight: 800; border-top: 1px dashed var(--glass-border); padding-top: 1rem; color: var(--text-primary);">
+                        <span>Total</span>
+                        <span>${{ "%.2f"|format(total) }}</span>
+                    </div>
                 </div>
                 <div class="summary-actions">
                     <a href="{{ url_for('checkout') }}" class="btn btn-primary"><i class="fas fa-lock"></i> Secure Checkout</a>
