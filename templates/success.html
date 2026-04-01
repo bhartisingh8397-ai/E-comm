@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmed - Jahnvi Premium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            background: linear-gradient(135deg, #fdfafb, #f5e6e0, #fdf6e3);
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Confetti Canvas */
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+
+        /* Balloons */
+        .balloon {
+            position: fixed; bottom: -200px; z-index: 0;
+            animation: floatUp ease-in forwards;
+        }
+        .balloon .ball {
+            width: 60px; height: 75px; border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+            position: relative;
+            box-shadow: inset -10px -10px 0 rgba(0,0,0,0.07);
+        }
+        .balloon .ball::before {
+            content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0;
+            border-left: 8px solid transparent; border-right: 8px solid transparent;
+            border-top: 12px solid inherit;
+        }
+        .balloon .string {
+            width: 1px; height: 100px; background: rgba(0,0,0,0.15);
+            margin: 0 auto;
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-120vh) rotate(15deg); opacity: 0; }
+        }
+
+        /* Success Card */
+        .success-card {
+            background: rgba(255,255,255,0.92); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 32px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.1);
+            padding: 4rem 3.5rem; max-width: 520px; width: 90%;
+            text-align: center; position: relative; z-index: 10;
+            animation: popIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.7); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .success-icon {
+            width: 100px; height: 100px; border-radius: 50%;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 2rem; box-shadow: 0 10px 30px rgba(39,174,96,0.3);
+            animation: bounceIn 0.8s 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0); } 100% { transform: scale(1); }
+        }
+        .success-icon i { font-size: 3rem; color: #fff; }
+
+        .success-card h2 {
+            font-size: 2.2rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.8rem;
+        }
+        .success-card .order-id {
+            display: inline-block; background: #f0faf4; color: #27ae60;
+            padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem;
+            font-weight: 700; margin-bottom: 1.5rem; border: 1px solid rgba(39,174,96,0.2);
+        }
+        .success-card p {
+            color: var(--text-secondary); font-size: 1.05rem; line-height: 1.7; margin-bottom: 2.5rem;
+        }
+
+        .success-actions { display: flex; flex-direction: column; gap: 1rem; }
+        .success-actions .btn {
+            padding: 1rem; border-radius: 14px; font-weight: 700; text-align: center;
+            text-decoration: none; font-size: 1rem; transition: var(--transition);
+        }
+        .btn-home {
+            background: var(--accent-gradient); color: #fff;
+            box-shadow: 0 8px 25px var(--accent-glow); border: none;
+        }
+        .btn-home:hover { transform: translateY(-3px); box-shadow: 0 12px 35px var(--accent-glow); }
+        .btn-track {
+            background: #fff; color: var(--text-primary);
+            border: 1.5px solid var(--glass-border);
+        }
+        .btn-track:hover { border-color: var(--accent); color: var(--accent); }
+
+        .brand-footer {
+            margin-top: 2rem; font-family: 'Dancing Script', cursive;
+            font-size: 1.6rem; background: var(--accent-gradient);
+            background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Balloons injected by JS -->
+
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <h2>Order Confirmed! 🎉</h2>
+        <span class="order-id"><i class="fas fa-receipt"></i> Order #JHN{{ range(10000, 99999) | random }}</span>
+        <p>Thank you for choosing Jahnvi! Your order has been placed successfully and is being prepared for shipment. You'll receive an email confirmation shortly.</p>
+        <div class="success-actions">
+            <a href="{{ url_for('index') }}" class="btn btn-home"><i class="fas fa-home"></i> Continue Shopping</a>
+            <a href="{{ url_for('index') }}" class="btn btn-track"><i class="fas fa-truck"></i> Track Your Order</a>
+        </div>
+        <div class="brand-footer">Jahnvi</div>
+    </div>
+
+    <script>
+    // ===== CONFETTI BURST =====
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const colors = ['#e5a1a1','#d4af37','#ff6b81','#7bed9f','#70a1ff','#ffa502','#ff4757','#2ed573','#eccc68','#ff6348'];
+    const confetti = [];
+
+    for (let i = 0; i < 250; i++) {
+        confetti.push({
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            w: Math.random() * 10 + 5,
+            h: Math.random() * 6 + 3,
+            vx: (Math.random() - 0.5) * 20,
+            vy: (Math.random() - 1) * 20 - 5,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 15,
+            gravity: 0.12 + Math.random() * 0.08,
+            opacity: 1,
+            shape: Math.random() > 0.5 ? 'rect' : 'circle'
+        });
+    }
+
+    function drawConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = false;
+        confetti.forEach(c => {
+            if (c.opacity <= 0) return;
+            alive = true;
+            c.x += c.vx;
+            c.y += c.vy;
+            c.vy += c.gravity;
+            c.vx *= 0.99;
+            c.rotation += c.rotSpeed;
+            c.opacity -= 0.003;
+
+            ctx.save();
+            ctx.translate(c.x, c.y);
+            ctx.rotate(c.rotation * Math.PI / 180);
+            ctx.globalAlpha = Math.max(0, c.opacity);
+            ctx.fillStyle = c.color;
+
+            if (c.shape === 'rect') {
+                ctx.fillRect(-c.w/2, -c.h/2, c.w, c.h);
+            } else {
+                ctx.beginPath();
+                ctx.arc(0, 0, c.w/2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+        });
+        if (alive) requestAnimationFrame(drawConfetti);
+    }
+    drawConfetti();
+
+    // ===== BALLOONS =====
+    const balloonColors = ['#e5a1a1','#d4af37','#ff6b81','#70a1ff','#7bed9f','#ffa502','#ff4757','#eccc68'];
+    for (let i = 0; i < 12; i++) {
+        const balloon = document.createElement('div');
+        balloon.className = 'balloon';
+        balloon.style.left = (Math.random() * 90 + 5) + '%';
+        balloon.style.animationDuration = (3 + Math.random() * 4) + 's';
+        balloon.style.animationDelay = (Math.random() * 2) + 's';
+        const color = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+        balloon.innerHTML = `
+            <div class="ball" style="background:${color}; border-color:${color};">
+                <div style="position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
+                    border-left:8px solid transparent;border-right:8px solid transparent;
+                    border-top:12px solid ${color};"></div>
+            </div>
+            <div class="string"></div>
+        `;
+        document.body.appendChild(balloon);
+    }
+
+    // Second confetti burst after 1.5s
+    setTimeout(() => {
+        for (let i = 0; i < 150; i++) {
+            confetti.push({
+                x: Math.random() * canvas.width,
+                y: -20,
+                w: Math.random() * 8 + 4,
+                h: Math.random() * 5 + 2,
+                vx: (Math.random() - 0.5) * 6,
+                vy: Math.random() * 3 + 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rotation: Math.random() * 360,
+                rotSpeed: (Math.random() - 0.5) * 10,
+                gravity: 0.06 + Math.random() * 0.04,
+                opacity: 1,
+                shape: Math.random() > 0.3 ? 'rect' : 'circle'
+            });
+        }
+        drawConfetti();
+    }, 1500);
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
+    </script>
+</body>
+</html>

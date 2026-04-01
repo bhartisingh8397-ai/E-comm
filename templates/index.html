@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jahnvi - Premium E-commerce</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-left">
+            <a href="{{ url_for('index') }}" class="logo">
+                <div class="logo-icon">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Jahnvi Logo">
+                </div>
+                Jahnvi
+            </a>
+            <form action="{{ url_for('products_list') }}" method="GET" class="search-form">
+                <input type="text" name="query" placeholder="Search premium products..." value="{{ request.args.get('query', '') }}">
+                <button type="submit">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+            </form>
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Home</a></li>
+            <li><a href="{{ url_for('products_list') }}" class="{% if request.endpoint == 'products_list' %}active{% endif %}">Products</a></li>
+            <li><a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}active{% endif %}">About</a></li>
+            <li><a href="{{ url_for('contact') }}" class="{% if request.endpoint == 'contact' %}active{% endif %}">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="{{ url_for('cart') }}" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-cart-shopping"></i>
+                <span>({{ session.get('cart', {}) | length }})</span>
+            </a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('account') }}" class="btn btn-outline">Account</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline" style="padding: 0.9rem 1.2rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div class="maha-hero">
+        <div class="hero-left">
+            <img src="{{ url_for('static', filename='images/sale_banner.png') }}" alt="Maha Sale Banner">
+        </div>
+        <div class="hero-right">
+            <div class="hero-right-content">
+                <div class="promo-box">
+                    <p class="promo-text">Upto <span>35% OFF</span> on your 1st order</p>
+                    <div class="qr-section">
+                        <img src="{{ url_for('static', filename='images/qr_code.png') }}" alt="QR Code">
+                        <p>Only on App</p>
+                    </div>
+                </div>
+                <div class="hero-cta-section">
+                    <h1>Smart Shopping<br><span>Trusted by Millions</span></h1>
+                    <a href="#shop" class="btn btn-primary shop-now-btn">Shop Now</a>
+                    <div class="sale-timer">
+                        <span class="timer-label">⚡ Sale Ends In</span>
+                        <div class="timer-digits" id="saleTimer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-row">
+        <div class="feature-item">
+            <i class="fas fa-rotate-left"></i>
+            <span>7 Days Easy Return</span>
+        </div>
+        <div class="feature-divider"></div>
+        <div class="feature-item">
+            <i class="fas fa-money-bill-transfer"></i>
+            <span>Cash on Delivery</span>
+        </div>
+        <div class="feature-divider"></div>
+        <div class="feature-item">
+            <i class="fas fa-tags"></i>
+            <span>Lowest Prices</span>
+        </div>
+    </div>
+
+    <main class="container" id="shop">
+        <h2 style="margin-bottom: 3rem; font-size: 2.5rem;">Featured Products</h2>
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card reveal" style="animation-delay: {{ loop.index * 0.1 }}s;">
+                <div class="product-image-wrapper">
+                    <img src="/{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+                    <button class="wishlist-btn" onclick="toggleWishlist(this, {{ product.id }})" title="Add to Wishlist">
+                        <i class="far fa-heart"></i>
+                    </button>
+                    {% if not product.is_available %}
+                    <div class="availability-badge out-of-stock">Out of Stock</div>
+                    {% else %}
+                    <div class="availability-badge in-stock">In Stock</div>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-meta">
+                        <span class="product-category">{{ product.category }}</span>
+                        <span class="product-size">Size: {{ product.size }}</span>
+                    </div>
+                    <h3 class="product-title">{{ product.name }}</h3>
+                    <div class="product-footer">
+                        <p class="product-price">${{ "%.2f"|format(product.price) }}</p>
+                        <a href="{{ url_for('add_to_cart', product_id=product.id) }}" class="add-to-cart {% if not product.is_available %}disabled{% endif %}" {% if not product.is_available %}onclick="return false;"{% endif %} onclick="showToast('Added to cart!', 'success')">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <!-- Premium Footer -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <span class="logo" style="font-family: 'Dancing Script', cursive; font-size: 2.2rem; color: #fff; -webkit-text-fill-color: unset;">Jahnvi</span>
+                <p>Your destination for premium fashion, jewelry, and cutting-edge electronics — all curated with love and delivered with care.</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-pinterest-p"></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('products_list') }}">Products</a>
+                <a href="{{ url_for('about') }}">About Us</a>
+                <a href="{{ url_for('contact') }}">Contact</a>
+            </div>
+            <div class="footer-col">
+                <h4>Categories</h4>
+                <a href="{{ url_for('products_list', category='Clothes') }}">Clothes</a>
+                <a href="{{ url_for('products_list', category='Jewelry') }}">Jewelry</a>
+                <a href="{{ url_for('products_list', category='Wearables') }}">Wearables</a>
+                <a href="{{ url_for('products_list', category='Computers') }}">Computers</a>
+            </div>
+            <div class="footer-col footer-newsletter">
+                <h4>Stay Updated</h4>
+                <p style="color: #999; font-size: 0.9rem; margin-bottom: 1rem;">Get exclusive offers and new arrivals straight to your inbox.</p>
+                <input type="email" placeholder="Enter your email">
+                <button onclick="showToast('Subscribed successfully! 🎉', 'success')"><i class="fas fa-paper-plane"></i> Subscribe</button>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 <a href="{{ url_for('index') }}">Jahnvi Premium</a>. All rights reserved. | Made with <i class="fas fa-heart" style="color: var(--accent);"></i> in India</p>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scroll to Top -->
+    <button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+    // ===== HAMBURGER MENU =====
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('open');
+        });
+    }
+
+    // ===== TOAST NOTIFICATIONS =====
+    function showToast(msg, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<i class="fas ${icons[type]}"></i><span>${msg}</span><button class="toast-close" onclick="this.parentElement.style.animation='toastOut 0.3s forwards';setTimeout(()=>this.parentElement.remove(),300)"><i class="fas fa-xmark"></i></button>`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.animation = 'toastOut 0.3s forwards'; setTimeout(() => toast.remove(), 300); }, 3500);
+    }
+
+    // Show flash messages as toasts
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          showToast('{{ message }}', '{{ "success" if category == "success" else "error" }}');
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    // ===== SCROLL TO TOP =====
+    window.addEventListener('scroll', () => {
+        document.getElementById('scrollTop').classList.toggle('visible', window.scrollY > 400);
+    });
+
+    // ===== WISHLIST =====
+    function toggleWishlist(btn, productId) {
+        btn.classList.toggle('active');
+        const icon = btn.querySelector('i');
+        if (btn.classList.contains('active')) {
+            icon.className = 'fas fa-heart';
+            showToast('Added to wishlist ❤️', 'success');
+        } else {
+            icon.className = 'far fa-heart';
+            showToast('Removed from wishlist', 'info');
+        }
+    }
+
+    // ===== FLASH SALE TIMER =====
+    function updateTimer() {
+        const now = new Date();
+        const end = new Date(now);
+        end.setHours(23, 59, 59, 999);
+        const diff = end - now;
+        const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+        const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+        const el = document.getElementById('saleTimer');
+        if (el) el.innerHTML = `<span class="digit">${h}</span><span class="sep">:</span><span class="digit">${m}</span><span class="sep">:</span><span class="digit">${s}</span>`;
+    }
+    setInterval(updateTimer, 1000);
+    updateTimer();
+    </script>
+</body>
+</html>

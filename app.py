@@ -1,0 +1,218 @@
+import os
+from flask import Flask, render_template, redirect, url_for, request, flash, session, send_from_directory
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from models import db, User, Product, Order, OrderItem
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'dev-secret-key-12345'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce_v2.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# Custom route to serve generated premium images directly from the artifact directory
+@app.route('/static/images/<path:filename>')
+def custom_images(filename):
+    artifact_dir = r"C:\Users\bharti\.gemini\antigravity\brain\0b984440-1902-4055-a7be-e2b815945298"
+    mapping = {
+        'logo.png': 'logo_png_1775049109309.png',
+        'hero.jpg': 'hero_jpg_1775045280131.png',
+        'watch.png': 'watch_png_1775045302469.png',
+        'headphones.png': 'headphones_png_1775045328052.png',
+        'laptop.png': 'laptop_png_1775045356794.png',
+        'lamp.png': 'lamp_png_1775050372527.png',
+        'speaker.png': 'speaker_png_1775050400907.png',
+        'vr.png': 'vr_png_1775050424247.png',
+        'keyboard.png': 'keyboard_png_1775050448628.png',
+        'mousepad.png': 'mousepad_png_1775050473970.png',
+        'tablet.png': 'tablet_png_1775050498489.png',
+        'sale_banner.png': 'sale_banner_png_1775052083639.png',
+        'sale_bg.jpg': 'sale_bg_jpg_1775052107611.png',
+        'qr_code.png': 'qr_code_png_1775052126035.png',
+        'dress.png': 'dress_png_1775058903002.png',
+        'jacket.png': 'jacket_png_1775058951015.png',
+        'scarf.png': 'scarf_png_1775059013353.png',
+        'necklace.png': 'necklace_png_1775059057888.png',
+        'ring.png': 'ring_png_1775059093220.png',
+        'earrings.png': 'earrings_png_1775059115590.png'
+    }
+    real_filename = mapping.get(filename, filename)
+    return send_from_directory(artifact_dir, real_filename)
+
+# Routes
+@app.route('/')
+def index():
+    query = request.args.get('query')
+    if query:
+        products = Product.query.filter(Product.name.contains(query) | Product.description.contains(query)).all()
+    else:
+        products = Product.query.all()
+    return render_template('index.html', products=products)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/product/<int:product_id>')
+def product_detail(product_id):
+    product = Product.query.get_or_404(product_id)
+    # Get some related products (simple implementation)
+    related_products = Product.query.filter(Product.category == product.category, Product.id != product.id).limit(4).all()
+    return render_template('product.html', product=product, related_products=related_products)
+
+@app.route('/products')
+def products_list():
+    query = request.args.get('query')
+    category = request.args.get('category')
+    sort = request.args.get('sort', 'default')
+    
+    if query:
+        products = Product.query.filter(Product.name.contains(query) | Product.description.contains(query))
+    elif category:
+        products = Product.query.filter_by(category=category)
+    else:
+        products = Product.query
+    
+    # Sorting
+    if sort == 'price_low':
+        products = products.order_by(Product.price.asc())
+    elif sort == 'price_high':
+        products = products.order_by(Product.price.desc())
+    elif sort == 'name':
+        products = products.order_by(Product.name.asc())
+    
+    products = products.all()
+        
+    categories = db.session.query(Product.category).distinct().all()
+    categories = [c[0] for c in categories]
+    
+    return render_template('products.html', products=products, categories=categories, current_sort=sort)
+
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    if request.method == 'POST':
+        flash('Thank you for your message! We will get back to you soon.', 'success')
+        return redirect(url_for('contact'))
+    return render_template('contact.html')
+
+@app.route('/account')
+@login_required
+def account():
+    # Fetch orders for the current user
+    orders = Order.query.filter_by(user_id=current_user.id).all()
+    return render_template('account.html', user=current_user, orders=orders)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('index'))
+        flash('Invalid email or password', 'error')
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        name = request.form.get('name')
+        password = request.form.get('password')
+        user = User.query.filter_by(email=email).first()
+        if user:
+            flash('Email already exists', 'error')
+            return redirect(url_for('register'))
+        new_user = User(email=email, name=name, password=generate_password_hash(password))
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+@app.route('/cart')
+def cart():
+    cart_items = session.get('cart', {})
+    products = []
+    total = 0
+    for product_id, quantity in cart_items.items():
+        product = Product.query.get(int(product_id))
+        if product:
+            products.append({'product': product, 'quantity': quantity})
+            total += product.price * quantity
+    return render_template('cart.html', products=products, total=total)
+
+@app.route('/add_to_cart/<int:product_id>')
+def add_to_cart(product_id):
+    cart = session.get('cart', {})
+    cart[str(product_id)] = cart.get(str(product_id), 0) + 1
+    session['cart'] = cart
+    flash('Product added to cart!', 'success')
+    return redirect(url_for('index'))
+
+@app.route('/remove_from_cart/<int:product_id>')
+def remove_from_cart(product_id):
+    cart = session.get('cart', {})
+    if str(product_id) in cart:
+        del cart[str(product_id)]
+    session['cart'] = cart
+    return redirect(url_for('cart'))
+
+@app.route('/checkout', methods=['GET', 'POST'])
+@login_required
+def checkout():
+    cart_items = session.get('cart', {})
+    if not cart_items:
+        return redirect(url_for('index'))
+    
+    total = 0
+    items_to_buy = []
+    for product_id, quantity in cart_items.items():
+        product = Product.query.get(int(product_id))
+        if product:
+            total += product.price * quantity
+            items_to_buy.append((product, quantity))
+            
+    if request.method == 'POST':
+        order = Order(user_id=current_user.id, total_price=total)
+        db.session.add(order)
+        db.session.commit()
+        
+        for product, quantity in items_to_buy:
+            order_item = OrderItem(order_id=order.id, product_id=product.id, quantity=quantity, price=product.price)
+            db.session.add(order_item)
+        
+        db.session.commit()
+        session['cart'] = {}
+        flash('Order placed successfully!', 'success')
+        return render_template('success.html')
+        
+    return render_template('checkout.html', total=total)
+
+# Auto-initialize and seed DB on server refresh
+with app.app_context():
+    try:
+        db.create_all()
+        if Product.query.count() < 15:
+            import db_init
+            db_init.seed_db()
+    except Exception as e:
+        print(f"DB Auto-Init Error: {e}")
+
+if __name__ == '__main__':
+    app.run(debug=True)

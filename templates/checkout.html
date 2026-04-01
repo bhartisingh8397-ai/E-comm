@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Jahnvi Premium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .checkout-page { padding-top: 170px; max-width: 1100px; margin: 0 auto; padding-bottom: 4rem; padding-left: 2rem; padding-right: 2rem; }
+        .checkout-header { text-align: center; margin-bottom: 3rem; }
+        .checkout-header h2 { font-size: 2.5rem; font-weight: 800; }
+        .checkout-header p { color: var(--text-secondary); margin-top: 0.5rem; }
+
+        .checkout-steps {
+            display: flex; justify-content: center; gap: 2rem; margin-bottom: 3rem;
+        }
+        .step {
+            display: flex; align-items: center; gap: 0.6rem; font-size: 0.9rem; color: #bbb;
+        }
+        .step.active { color: var(--accent); font-weight: 700; }
+        .step .step-num {
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; font-weight: 700; border: 2px solid #ddd; background: #fff;
+        }
+        .step.active .step-num { background: var(--accent-gradient); color: #fff; border-color: var(--accent); }
+        .step-line { width: 60px; height: 2px; background: #ddd; align-self: center; }
+
+        .checkout-layout { display: grid; grid-template-columns: 1fr 400px; gap: 3rem; align-items: start; }
+
+        .checkout-form-card {
+            background: var(--card-bg); border-radius: 24px; padding: 2.5rem;
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+        }
+        .section-title {
+            font-size: 1.3rem; font-weight: 800; margin-bottom: 1.5rem; padding-bottom: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 0.7rem;
+        }
+        .section-title i { color: var(--accent); }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+
+        .form-group { margin-bottom: 1.3rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.9rem 1.2rem; border: 1.5px solid #e8e8e8; border-radius: 12px;
+            font-size: 1rem; font-family: 'Inter', sans-serif; background: #fafafa;
+            transition: var(--transition); outline: none;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 4px var(--accent-glow); }
+
+        .payment-methods {
+            display: flex; gap: 1rem; margin-bottom: 1.5rem;
+        }
+        .payment-method {
+            flex: 1; padding: 1rem; border: 2px solid #e8e8e8; border-radius: 14px; text-align: center;
+            cursor: pointer; transition: var(--transition); background: #fff;
+        }
+        .payment-method:hover, .payment-method.selected { border-color: var(--accent); background: rgba(229,161,161,0.05); }
+        .payment-method i { font-size: 1.5rem; color: var(--accent); display: block; margin-bottom: 0.4rem; }
+        .payment-method span { font-size: 0.8rem; font-weight: 600; color: #666; }
+
+        .card-icons { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .card-icons img { height: 28px; opacity: 0.6; }
+
+        .order-sidebar {
+            background: var(--card-bg); border-radius: 24px; padding: 2.5rem;
+            border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow);
+            position: sticky; top: 180px;
+        }
+        .order-sidebar h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 1.5rem; }
+
+        .order-item { display: flex; justify-content: space-between; padding: 0.7rem 0; border-bottom: 1px solid #f5f5f5; }
+        .order-item span:first-child { color: var(--text-secondary); font-size: 0.95rem; }
+        .order-item span:last-child { font-weight: 700; }
+
+        .order-totals { margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--glass-border); }
+        .order-total-row { display: flex; justify-content: space-between; padding: 0.5rem 0; }
+        .order-total-row.grand { font-size: 1.4rem; font-weight: 800; margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid var(--glass-border); }
+        .order-total-row.grand span:last-child { color: var(--accent); }
+
+        .place-order-btn {
+            width: 100%; padding: 1.1rem; border: none; border-radius: 14px;
+            background: var(--accent-gradient); color: #fff; font-size: 1.1rem; font-weight: 700;
+            cursor: pointer; transition: var(--transition); box-shadow: 0 8px 25px var(--accent-glow);
+            margin-top: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+        }
+        .place-order-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 35px var(--accent-glow); }
+
+        .secure-note {
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            margin-top: 1.2rem; font-size: 0.8rem; color: #999;
+        }
+        .secure-note i { color: #27ae60; }
+
+        @media (max-width: 900px) {
+            .checkout-layout { grid-template-columns: 1fr; }
+            .order-sidebar { position: static; }
+            .form-row { grid-template-columns: 1fr; }
+            .checkout-steps { gap: 1rem; font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-left">
+            <a href="{{ url_for('index') }}" class="logo">
+                <div class="logo-icon">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Jahnvi Logo">
+                </div>
+                Jahnvi
+            </a>
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('products_list') }}">Shop</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+            <a href="{{ url_for('cart') }}" class="btn btn-outline"><i class="fas fa-shopping-bag"></i> Cart</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('account') }}" class="btn btn-outline"><i class="fas fa-user"></i></a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline">Logout</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="checkout-page">
+        <div class="checkout-header">
+            <h2>Secure Checkout</h2>
+            <p>Complete your order in a few simple steps</p>
+        </div>
+
+        <div class="checkout-steps">
+            <div class="step"><span class="step-num"><i class="fas fa-check"></i></span> Cart</div>
+            <div class="step-line"></div>
+            <div class="step active"><span class="step-num">2</span> Details</div>
+            <div class="step-line"></div>
+            <div class="step"><span class="step-num">3</span> Confirm</div>
+        </div>
+
+        <form method="POST">
+        <div class="checkout-layout">
+            <div>
+                <!-- Shipping Section -->
+                <div class="checkout-form-card" style="margin-bottom: 2rem;">
+                    <h3 class="section-title"><i class="fas fa-truck"></i> Shipping Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" value="{{ current_user.name }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" placeholder="+91 98765 43210" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Street Address</label>
+                        <input type="text" placeholder="123 Premium Lane, Luxury District" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" placeholder="Mumbai" required>
+                        </div>
+                        <div class="form-group">
+                            <label>State</label>
+                            <input type="text" placeholder="Maharashtra" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>PIN Code</label>
+                            <input type="text" placeholder="400001" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Country</label>
+                            <input type="text" value="India" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="checkout-form-card">
+                    <h3 class="section-title"><i class="fas fa-credit-card"></i> Payment Method</h3>
+
+                    <div class="payment-methods">
+                        <div class="payment-method selected">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Card</span>
+                        </div>
+                        <div class="payment-method">
+                            <i class="fas fa-building-columns"></i>
+                            <span>Net Banking</span>
+                        </div>
+                        <div class="payment-method">
+                            <i class="fas fa-wallet"></i>
+                            <span>UPI</span>
+                        </div>
+                        <div class="payment-method">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>COD</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input type="text" placeholder="1234  5678  9012  3456">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" placeholder="MM / YY">
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="password" placeholder="•••">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Name on Card</label>
+                        <input type="text" placeholder="As printed on card">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="order-sidebar">
+                <h3><i class="fas fa-receipt" style="color: var(--accent); margin-right: 0.5rem;"></i> Order Summary</h3>
+
+                <div class="order-item">
+                    <span>Subtotal</span>
+                    <span>${{ "%.2f"|format(total) }}</span>
+                </div>
+                <div class="order-item">
+                    <span>Shipping</span>
+                    <span style="color: #27ae60;">FREE</span>
+                </div>
+                <div class="order-item">
+                    <span>Tax (GST 18%)</span>
+                    <span>${{ "%.2f"|format(total * 0.18) }}</span>
+                </div>
+
+                <div class="order-totals">
+                    <div class="order-total-row grand">
+                        <span>Total</span>
+                        <span>${{ "%.2f"|format(total * 1.18) }}</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="place-order-btn">
+                    <i class="fas fa-lock"></i> Place Order — ${{ "%.2f"|format(total * 1.18) }}
+                </button>
+
+                <div class="secure-note">
+                    <i class="fas fa-shield-halved"></i>
+                    SSL Encrypted · 100% Secure Payment
+                </div>
+            </div>
+        </div>
+        </form>
+    </main>
+</body>
+</html>

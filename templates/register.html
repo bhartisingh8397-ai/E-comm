@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Jahnvi Premium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fdfafb 0%, #f5e6e0 50%, #fdf6e3 100%);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-page::before {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            top: -150px; right: -100px;
+            border-radius: 50%;
+        }
+        .auth-page::after {
+            content: '';
+            position: absolute;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%);
+            bottom: -100px; left: -50px;
+            border-radius: 50%;
+        }
+
+        .auth-brand {
+            position: absolute;
+            top: 2.5rem; left: 5%;
+            z-index: 10;
+        }
+        .auth-brand .logo {
+            font-size: 2.2rem;
+        }
+        .auth-brand .logo-icon {
+            height: 60px; width: 60px;
+        }
+
+        .signup-card {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            padding: 3.5rem 3rem;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            z-index: 5;
+            animation: slideUp 0.6s ease-out;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .signup-card h2 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .signup-card .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border: 1.5px solid #e8e8e8;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            background: #fafafa;
+            transition: var(--transition);
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+        .form-group .input-icon {
+            position: relative;
+        }
+        .form-group .input-icon i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            font-size: 0.9rem;
+        }
+        .form-group .input-icon input {
+            padding-left: 2.8rem;
+        }
+
+        .signup-btn {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: var(--accent-gradient);
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 8px 25px var(--accent-glow);
+            margin-top: 0.5rem;
+        }
+        .signup-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px var(--accent-glow);
+        }
+
+        .signup-footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+        .signup-footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 700;
+        }
+        .signup-footer a:hover { text-decoration: underline; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.8rem 0;
+            color: #ccc;
+            font-size: 0.85rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e8e8e8;
+        }
+
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        .trust-badges span {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: #999;
+        }
+        .trust-badges i { color: var(--accent); }
+
+        .flash-message { padding: 0.8rem 1rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .flash-error { background: #fff0f0; color: #e74c3c; border: 1px solid #ffd0d0; }
+        .flash-success { background: #f0fff4; color: #27ae60; border: 1px solid #c6f6d5; }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-brand">
+            <a href="{{ url_for('index') }}" class="logo">
+                <div class="logo-icon">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Jahnvi Logo">
+                </div>
+                Jahnvi
+            </a>
+        </div>
+
+        <div class="signup-card">
+            <h2>Join Jahnvi</h2>
+            <p class="subtitle">Create your premium account today</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="flash-message flash-error">
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <div class="input-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" name="name" required placeholder="Enter your full name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <div class="input-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" name="email" required placeholder="name@example.com">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" name="password" required placeholder="Create a secure password">
+                    </div>
+                </div>
+                <button type="submit" class="signup-btn">
+                    <i class="fas fa-arrow-right"></i> Create Account
+                </button>
+            </form>
+
+            <div class="divider">or</div>
+
+            <p class="signup-footer">
+                Already have an account? <a href="{{ url_for('login') }}">Sign in</a>
+            </p>
+
+            <div class="trust-badges">
+                <span><i class="fas fa-shield-halved"></i> Secure</span>
+                <span><i class="fas fa-lock"></i> Encrypted</span>
+                <span><i class="fas fa-heart"></i> Trusted</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

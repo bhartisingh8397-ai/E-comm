@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Jahnvi Premium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .account-header {
+            margin-top: 150px; text-align: center; margin-bottom: 4rem;
+        }
+        .account-header h1 { font-size: 3.5rem; color: var(--text-primary); }
+        
+        .account-container {
+            display: grid; grid-template-columns: 280px 1fr; gap: 3rem; align-items: start;
+        }
+        
+        .account-sidebar {
+            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 2rem; position: sticky; top: 120px;
+        }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 1rem;
+            padding: 1rem 1.5rem; border-radius: 12px;
+            text-decoration: none; color: var(--text-secondary);
+            font-weight: 600; transition: var(--transition); margin-bottom: 0.5rem;
+        }
+        .sidebar-link:hover { background: rgba(212, 175, 55, 0.05); color: var(--accent); }
+        .sidebar-link.active { background: var(--accent-gradient); color: #fff; box-shadow: 0 4px 15px var(--accent-glow); }
+        
+        .order-card {
+            background: #fff; border: 1px solid var(--glass-border); border-radius: 20px;
+            overflow: hidden; margin-bottom: 2rem; transition: var(--transition);
+        }
+        .order-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .order-header {
+            padding: 1.5rem 2rem; background: #fafafa; border-bottom: 1px solid var(--glass-border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .order-body { padding: 2rem; }
+        .order-id { font-weight: 700; color: var(--text-primary); }
+        .order-date { font-size: 0.85rem; color: var(--text-secondary); }
+        .order-status {
+            padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+        }
+        .status-pending { background: #fef9e7; color: #f39c12; }
+        .status-processing { background: #ebf5fb; color: #3498db; }
+        .status-shipped { background: #eafaf1; color: #2ecc71; }
+        .status-delivered { background: #f4f6f7; color: #7f8c8d; }
+        
+        .order-item {
+            display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1rem; padding-bottom: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .order-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .order-item img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; border: 1px solid #eee; }
+        .item-info h4 { font-size: 1rem; margin-bottom: 0.2rem; }
+        .item-info p { font-size: 0.85rem; color: var(--text-secondary); }
+        
+        @media (max-width: 900px) {
+            .account-container { grid-template-columns: 1fr; }
+            .account-sidebar { position: static; margin-bottom: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-left">
+            <a href="{{ url_for('index') }}" class="logo">
+                <div class="logo-icon">
+                    <img src="/static/images/logo.png" alt="Jahnvi Logo">
+                </div>
+                Jahnvi
+            </a>
+            <form action="{{ url_for('products_list') }}" method="GET" class="search-form">
+                <input type="text" name="query" placeholder="Search premium products..." value="{{ request.args.get('query', '') }}">
+                <button type="submit">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+            </form>
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('products_list') }}">Products</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="{{ url_for('contact') }}">Contact</a></li>
+        </ul>
+        <div class="nav-actions">
+            <button class="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="{{ url_for('cart') }}" class="btn btn-outline" style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-cart-shopping"></i>
+                <span>({{ session.get('cart', {}) | length }})</span>
+            </a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('account') }}" class="btn btn-outline active">Account</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-outline" style="padding: 0.9rem 1.2rem;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </a>
+            {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="account-header">
+            <h1>My Account</h1>
+            <p style="color: var(--text-secondary); margin-top: 0.5rem;">Welcome back, {{ current_user.name }}</p>
+        </div>
+
+        <div class="account-container">
+            <aside class="account-sidebar">
+                <a href="#profile" class="sidebar-link active">
+                    <i class="fas fa-user"></i> Profile Details
+                </a>
+                <a href="#orders" class="sidebar-link">
+                    <i class="fas fa-box"></i> Order History
+                </a>
+                <a href="#settings" class="sidebar-link">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+                <a href="{{ url_for('logout') }}" class="sidebar-link" style="color: #ff4757; margin-top: 2rem;">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </a>
+            </aside>
+
+            <div class="account-content">
+                <!-- User Details Section -->
+                <section id="profile" class="glass reveal" style="padding: 3rem; margin-bottom: 4rem;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 2rem;">Personal Information</h2>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Full Name</label>
+                            <p style="font-size: 1.2rem; font-weight: 700;">{{ current_user.name }}</p>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem;">Email Address</label>
+                            <p style="font-size: 1.2rem; font-weight: 700;">{{ current_user.email }}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Order History Section -->
+                <section id="orders" class="reveal" style="animation-delay: 0.2s;">
+                    <h2 style="font-size: 1.8rem; margin-bottom: 2rem;">Order History</h2>
+                    {% if orders %}
+                        {% for order in orders | reverse %}
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div>
+                                    <span class="order-id">Order #JHN{{ order.id + 10000 }}</span>
+                                    <span class="order-date" style="margin-left: 1rem;">Placed on {{ order.created_at.strftime('%B %d, %Y') if order.created_at else 'Recently' }}</span>
+                                </div>
+                                <div>
+                                    <span class="order-status status-{{ order.status | lower }}">{{ order.status }}</span>
+                                </div>
+                            </div>
+                            <div class="order-body">
+                                <div class="order-items">
+                                    {# This would ideally show actual items if linked, for now we show a summary #}
+                                    <p style="font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Order Items:</p>
+                                    {# Assuming OrderItems are linked #}
+                                    {% for item in order.items %}
+                                        <div class="order-item">
+                                            {# item.product is linked through models #}
+                                            <img src="/{{ item.product.image_url }}" alt="{{ item.product.name }}">
+                                            <div class="item-info">
+                                                <h4>{{ item.product.name }}</h4>
+                                                <p>Size: {{ item.product.size }} | Qty: {{ item.quantity }}</p>
+                                            </div>
+                                            <div style="margin-left: auto; font-weight: 700;">
+                                                ${{ "%.2f"|format(item.price * item.quantity) }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div style="margin-top: 2rem; border-top: 2px dashed #f0f0f0; padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="color: var(--text-secondary);">
+                                        Total Amount: <span style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-left: 1rem;">${{ "%.2f"|format(order.total_price) }}</span>
+                                    </div>
+                                    <a href="#" class="btn btn-outline" style="padding: 0.6rem 1.5rem; font-size: 0.85rem;">Track Order</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="glass" style="padding: 5rem; text-align: center;">
+                            <i class="fas fa-shopping-bag" style="font-size: 4rem; color: #eee; margin-bottom: 2rem;"></i>
+                            <p style="color: var(--text-secondary); font-size: 1.2rem;">You haven't ordered anything yet.</p>
+                            <a href="{{ url_for('products_list') }}" class="btn btn-primary" style="margin-top: 2rem;">Start Shopping</a>
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Premium Footer from index.html -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <span class="logo" style="font-family: 'Dancing Script', cursive; font-size: 2.2rem; color: #fff; -webkit-text-fill-color: unset;">Jahnvi</span>
+                <p>Your destination for premium fashion, jewelry, and cutting-edge electronics — all curated with love and delivered with care.</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-pinterest-p"></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('products_list') }}">Products</a>
+                <a href="{{ url_for('about') }}">About Us</a>
+                <a href="{{ url_for('contact') }}">Contact</a>
+            </div>
+            <div class="footer-col">
+                <h4>Categories</h4>
+                <a href="{{ url_for('products_list', category='Clothes') }}">Clothes</a>
+                <a href="{{ url_for('products_list', category='Jewelry') }}">Jewelry</a>
+                <a href="{{ url_for('products_list', category='Wearables') }}">Wearables</a>
+                <a href="{{ url_for('products_list', category='Computers') }}">Computers</a>
+            </div>
+            <div class="footer-col footer-newsletter">
+                <h4>Stay Updated</h4>
+                <p style="color: #999; font-size: 0.9rem; margin-bottom: 1rem;">Get exclusive offers and new arrivals straight to your inbox.</p>
+                <input type="email" placeholder="Enter your email">
+                <button onclick="showToast('Subscribed successfully! 🎉', 'success')"><i class="fas fa-paper-plane"></i> Subscribe</button>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 <a href="{{ url_for('index') }}">Jahnvi Premium</a>. All rights reserved. | Made with <i class="fas fa-heart" style="color: var(--accent);"></i> in India</p>
+        </div>
+    </footer>
+
+    <!-- Toast for notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas fa-check-circle"></i><span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3500);
+        }
+
+        // Hamburger Menu
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+        if (hamburger) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('open');
+            });
+        }
+    </script>
+</body>
+</html>
